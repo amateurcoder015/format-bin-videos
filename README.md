@@ -17,8 +17,13 @@ The gallery is password-protected. To get the password, contact me on [WhatsApp]
 ## How it works
 
 - `middleware.js` runs on Vercel before every request. Visitors without a valid access cookie go to `login.html`.
-- The password lives in the Vercel environment variable `ACCESS_PASSWORD`. If it is not set, nobody can sign in.
+- The password is not stored in the repo. `middleware.js` holds only two SHA-256 hashes of it, so the public code does not reveal it.
 - A correct password sets an HttpOnly cookie for 30 days. Visit `/api/logout` to sign out.
+- To change the password, recompute both hashes and replace `CRED_HASH` and `COOKIE_HASH`:
+
+```sh
+python3 -c 'import hashlib,sys; h=lambda s: hashlib.sha256(s.encode()).hexdigest(); p=sys.argv[1]; print(h("format-bin-cred:"+p)); print(h(h("format-bin-cookie:"+p)))' 'NEW_PASSWORD'
+```
 
 ## Editing the gallery
 
