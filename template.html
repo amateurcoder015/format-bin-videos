@@ -1,0 +1,293 @@
+<title>Format Bin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: a darkroom contact sheet. Sticky slate bar of filters, then a grid of frames, each stamped with its reference code. Prompt builder docks below. */
+:root {
+  --bg: #e9ebee;
+  --surface: #f7f8f9;
+  --ink: #16191d;
+  --muted: #535a64;
+  --line: #c9ced5;
+  --safelight: #a92d18;
+  --safelight-soft: #f6ddd6;
+  --chip: #dde1e6;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "Source Serif 4", Georgia, serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111316; --surface: #1a1d21; --ink: #ecedef; --muted: #9aa2ad; --line: #2c3138;
+    --safelight: #ff6847; --safelight-soft: #3a1f19; --chip: #252a30; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111316; --surface: #1a1d21; --ink: #ecedef; --muted: #9aa2ad; --line: #2c3138;
+  --safelight: #ff6847; --safelight-soft: #3a1f19; --chip: #252a30; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; padding-inline: 16px; padding-block: 0 48px; }
+.wrap { max-width: 1280px; margin-inline: auto; }
+header.top { padding-block: 40px 20px; display: grid; gap: 14px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--safelight); }
+h1 { font-family: var(--display); font-stretch: 68%; font-weight: 800; font-size: clamp(44px, 8vw, 92px); line-height: .92; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+.lede { max-width: 62ch; color: var(--muted); margin: 0; }
+.lede code, .howto code { font-family: var(--mono); font-size: .86em; background: var(--chip); padding: 1px 6px; border-radius: 4px; color: var(--ink); }
+.howto { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 8px; }
+.howto div { border-top: 2px solid var(--ink); padding-top: 8px; font-size: 14px; color: var(--muted); }
+.howto b { display: block; font-family: var(--display); font-stretch: 80%; font-size: 17px; color: var(--ink); margin-bottom: 2px; }
+
+.slate { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); padding-block: 12px; display: grid; gap: 10px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.search { flex: 1 1 220px; min-width: 0; font: 15px var(--body); padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+.search:focus-visible, button:focus-visible, select:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--safelight); outline-offset: 2px; }
+.pill { font-family: var(--display); font-stretch: 85%; font-weight: 600; font-size: 14px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.pill[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.pill .n { font-family: var(--mono); font-size: 11px; opacity: .65; margin-left: 4px; }
+.cats .pill { font-size: 13px; padding: 4px 10px; }
+.count { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-left: auto; }
+
+.group-title { font-family: var(--display); font-stretch: 75%; font-weight: 700; font-size: 26px; margin: 36px 0 4px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.group-title small { font-family: var(--mono); font-size: 12px; font-weight: 400; color: var(--muted); letter-spacing: .04em; }
+.group-note { color: var(--muted); font-size: 14px; margin: 0 0 14px; max-width: 70ch; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.frame { position: relative; aspect-ratio: 16 / 9; background: #0b0c0e; overflow: hidden; max-width: 100%; }
+.frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.frame.tall img { object-fit: contain; }
+.frame .code { position: absolute; left: 8px; bottom: 8px; font-family: var(--mono); font-size: 11px; color: #fff; background: rgba(10,10,12,.72); padding: 4px 8px; border-radius: 3px; letter-spacing: .03em; }
+.body { padding: 12px 14px 14px; display: grid; gap: 8px; flex: 1; align-content: start; }
+.name { font-family: var(--display); font-stretch: 82%; font-weight: 700; font-size: 20px; line-height: 1.1; margin: 0; }
+.name span { font-family: var(--body); font-weight: 400; font-size: 14px; color: var(--muted); margin-left: 6px; }
+.desc { font-size: 14px; color: var(--muted); margin: 0; }
+.tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag { font-family: var(--mono); font-size: 11px; padding: 4px 8px; border-radius: 3px; background: var(--chip); color: var(--ink); }
+.tag.fit { background: var(--safelight-soft); color: var(--safelight); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 4px; }
+.btn { font-family: var(--display); font-stretch: 85%; font-weight: 600; font-size: 13px; padding: 6px 10px; border-radius: 5px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; text-decoration: none; }
+.btn.primary { background: var(--safelight); border-color: var(--safelight); color: #fff; }
+.btn:hover { border-color: var(--ink); }
+.empty { padding: 40px 0; color: var(--muted); }
+
+.builder { margin-top: 56px; border-top: 3px solid var(--ink); padding-top: 18px; display: grid; gap: 14px; }
+.builder h2 { font-family: var(--display); font-stretch: 70%; font-weight: 800; font-size: 40px; margin: 0; line-height: 1; }
+.form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.form label { display: grid; gap: 4px; font-family: var(--mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; min-width: 0; }
+.form .wide { grid-column: 1 / -1; }
+.form select, .form input, .form textarea { font: 15px var(--body); text-transform: none; letter-spacing: 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 100%; }
+.form textarea { min-height: 110px; resize: vertical; }
+.out pre { margin: 0; background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--safelight); border-radius: 6px; padding: 14px 16px; font: 13px/1.55 var(--mono); white-space: pre-wrap; word-break: break-word; overflow-x: auto; }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); font-family: var(--display); font-weight: 600; padding: 8px 16px; border-radius: 6px; font-size: 14px; z-index: 10; }
+@media (prefers-reduced-motion: no-preference) { .card { transition: transform .15s ease; } .card:hover { transform: translateY(-2px); } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">55 looks · 3 toolkits · ready to reference</div>
+    <h1>Format Bin</h1>
+    <p class="lede">Every animation style Claude can build for you, in one place. Find a look, copy its code (like <code>lemo:risograph</code>), and paste it into a request: "make a 40s Short about compound interest in <code>lemo:risograph</code>". Or fill in the prompt builder at the bottom.</p>
+    <div class="howto">
+      <div><b>House format</b>The Icarus Short. Remotion, native 9:16, captions plus flickering art-card reveals timed to your audio.</div>
+      <div><b>Lemo-Opuscar</b>43 film styles drawn in code and rendered to MP4. 16:9 by default; vertical with <code>--size 1080x1920</code>.</div>
+      <div><b>AI_Animation</b>11 HTML formats for explainers, data, diagrams and UI demos. Built for 16:9; Claude renders them to MP4 frame by frame.</div>
+    </div>
+  </header>
+
+  <div class="slate" role="search">
+    <div class="row">
+      <input id="q" class="search" type="search" placeholder="Search: ink, data, phone, poster, kids…" aria-label="Search formats">
+      <button class="pill" id="vert" aria-pressed="false" title="Show only formats that can render 9:16">Shorts-ready</button>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="row" id="sources"></div>
+    <div class="row cats" id="cats"></div>
+  </div>
+
+  <main id="list"></main>
+
+  <section class="builder" id="builder" aria-labelledby="b-title">
+    <div class="eyebrow">Prompt builder</div>
+    <h2 id="b-title">Write the request</h2>
+    <div class="form">
+      <label>Format<select id="b-format"></select></label>
+      <label>Frame<select id="b-aspect">
+        <option value="1080x1920">9:16 · YouTube Shorts / Reels</option>
+        <option value="1920x1080">16:9 · YouTube</option>
+        <option value="1080x1080">1:1 · Feed post</option>
+      </select></label>
+      <label>Length (seconds)<input id="b-len" type="number" min="5" max="600" value="45"></label>
+      <label>Audio or voice<input id="b-audio" type="text" placeholder="path to audio file, or 'generate voiceover'"></label>
+      <label class="wide">Topic or script<textarea id="b-topic" placeholder="What the video is about, or the exact lines to show. Mark punchlines with [[ ]]."></textarea></label>
+    </div>
+    <div class="out"><pre id="b-out"></pre></div>
+    <div class="row"><button class="btn primary" id="b-copy">Copy prompt</button></div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const LEMO = /*LEMO_DATA*/;
+
+const HOUSE = /*HOUSE_DATA*/.map(h => ({cat: 'House format', ...h, src: 'house', thumb: 'thumbs/' + h.id.replace(':', '-') + '.webp'}));
+
+const AI = [
+  ['video-shot-demos', 'Cinematic Shot Pages', 'One HTML page per shot, rotating through 41 visual styles, with camera moves, synced sound effects and two reacting characters.', ['Explainers', 'Courses', 'Product launches'], 'Story'],
+  ['swiss-shot-demos', 'Swiss Chart Shots', 'Editorial Swiss layout: paper grey, charcoal ink, hairlines and one orange accent. Every shot is a chart (timeline, cycle, flow chain, heat map, 20 kinds).', ['Finance', 'Research', 'Tech explainers'], 'Data'],
+  ['stacked-data-cards', 'Stacked Data Cards', 'Argument cards pop in from the bottom and stack to the left. Line charts draw, numbers count up, gauges fill, timed to a voiceover.', ['Data arguments', 'Findings', 'Finance'], 'Data'],
+  ['ppt-animation', 'Animated Slide Deck', 'Slide-by-slide pages where every line eases in. Five themes: dark-tech, warm-paper, clean-white, cyber-red, gradient-dark.', ['Lectures', 'Tech talks', 'Course videos'], 'Slides'],
+  ['flowchart', 'Concept Flowcharts', 'Glowing nodes, flowing arrows and data particles. Seven diagram types including concept maps, timelines and model internals (RNN, LSTM).', ['How it works', 'Science', 'AI/ML'], 'Diagrams'],
+  ['dynamic-archify', 'Living Architecture', 'Architecture, sequence, data-flow and state diagrams with moving connections. Light/dark toggle; exports PNG, SVG, GIF and WebM. Accepts Mermaid.', ['System design', 'Pipelines', 'Workflows'], 'Diagrams'],
+  ['network-protocol-viz', 'Protocol Visualiser', 'Packets moving through TCP/IP, Ethernet frames, IPv4, routing, DHCP and HTTPS, step by step.', ['Networking', 'Security', 'CS lessons'], 'Diagrams'],
+  ['card-theater', 'Card Theater', 'Sidebar narration beside a 3D card carousel (coverflow, focus), with mode switches and highlighter marks.', ['Step-by-step', 'Feature tours', 'Protocols'], 'Story'],
+  ['phone-ui-demos', 'Phone Screen Film', 'A realistic phone recording: lock-screen notifications, chats, settings and app screens, with HyperOS-grade motion.', ['App demos', 'Social stories', 'Product features'], 'UI demos'],
+  ['win11-ui-demos', 'Windows 11 Replica', 'A 1:1 Windows 11 desktop: Explorer, Start menu, dialogs, even a blue screen, driven by a scripted cursor with teaching marks.', ['Software tutorials', 'IT how-tos', 'Security'], 'UI demos'],
+  ['scholar-notes', 'Scholar Notes', 'Handwritten-notebook study pages in two templates. Best as still pages or slow scroll footage.', ['Study notes', 'Summaries', 'Revision'], 'Pages'],
+].map(([slug, name, desc, uses, cat]) => ({
+  id: 'ai:' + slug, src: 'ai', name, sub: slug, cat, desc, uses,
+  thumb: 'thumbs/ai-' + slug + '.webp', vertical: 'no',
+  link: 'https://github.com/Unclecheng-li/AI_Animation/tree/master/skills/' + slug, linkLabel: 'Skill page'
+}));
+
+const LEMO_ITEMS = LEMO.filter(s => s.slug !== 'my-style').map(s => ({
+  id: 'lemo:' + s.slug, src: 'lemo', name: s.en, sub: s.cn, cat: s.category_en,
+  desc: s.line, uses: s.uses || [], film: s.film,
+  thumb: 'thumbs/lemo-' + s.slug + '.webp', vertical: 'size',
+  link: 'https://lemomo-ai.github.io/lemo-opuscar/', linkLabel: 'Demo films'
+}));
+
+const ALL = [...HOUSE, ...LEMO_ITEMS, ...AI];
+const SOURCES = [
+  {key: 'all', label: 'All'},
+  {key: 'house', label: 'House format', note: 'Built for you in this workspace. A Remotion project Claude copies for each new topic.'},
+  {key: 'lemo', label: 'Lemo-Opuscar', note: 'Film styles drawn entirely in code. Give any topic; Claude writes a treatment and renders an MP4, with optional voice and music. Library: ~/lemo-opuscar.'},
+  {key: 'ai', label: 'AI_Animation', note: 'Single-file HTML animations made for 16:9. Claude can adapt the layout and render them to MP4 frame by frame. Skills live in ~/.claude/skills.'},
+];
+
+const state = {src: 'all', cat: 'all', q: '', vert: false};
+try { Object.assign(state, JSON.parse(localStorage.getItem('format-bin') || '{}')); } catch (e) {}
+const save = () => { try { localStorage.setItem('format-bin', JSON.stringify(state)); } catch (e) {} };
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else if (v !== null && v !== undefined) n.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k !== null && k !== undefined) n.append(k.nodeType ? k : document.createTextNode(k));
+  return n;
+};
+
+const toast = (msg) => {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 1600);
+};
+const copy = async (text, msg) => {
+  try { await navigator.clipboard.writeText(text); toast(msg); }
+  catch (e) {
+    const out = document.getElementById('b-out'); out.textContent = text;
+    const r = document.createRange(); r.selectNodeContents(out); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    out.scrollIntoView({block: 'center'}); toast('Selected in the box below. Press Ctrl/Cmd+C');
+  }
+};
+
+const matches = (it) => {
+  if (state.src !== 'all' && it.src !== state.src) return false;
+  if (state.cat !== 'all' && it.cat !== state.cat) return false;
+  if (state.vert && it.vertical === 'no') return false;
+  if (state.q) {
+    const hay = [it.id, it.name, it.sub, it.cat, it.desc, it.film, ...(it.uses || [])].join(' ').toLowerCase();
+    if (!state.q.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
+  }
+  return true;
+};
+
+const vertTag = (it) => it.vertical === 'native' ? el('span', {class: 'tag fit'}, '9:16 native')
+  : it.vertical === 'size' ? el('span', {class: 'tag fit'}, '9:16 via --size') : el('span', {class: 'tag'}, '16:9 native');
+
+function card(it) {
+  return el('article', {class: 'card'},
+    el('div', {class: 'frame' + (it.tall ? ' tall' : '')},
+      el('img', {src: it.thumb, alt: it.name + ' sample frame', loading: 'lazy', width: 640, height: 360}),
+      el('span', {class: 'code'}, it.id)),
+    el('div', {class: 'body'},
+      el('h3', {class: 'name'}, it.name, it.sub ? el('span', {}, it.sub) : null),
+      el('p', {class: 'desc'}, it.desc),
+      el('div', {class: 'tags'}, vertTag(it), it.film ? el('span', {class: 'tag'}, 'Demo: ' + it.film) : null, ...(it.uses || []).slice(0, 3).map(u => el('span', {class: 'tag'}, u))),
+      el('div', {class: 'actions'},
+        el('button', {class: 'btn primary', onclick: () => copy(it.id, 'Copied ' + it.id)}, 'Copy code'),
+        el('button', {class: 'btn', onclick: () => { fsel.value = it.id; build(); document.getElementById('builder').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); }}, 'Use in prompt'),
+        it.link ? el('a', {class: 'btn', href: it.link, target: '_blank', rel: 'noopener'}, it.linkLabel) : null)));
+}
+
+function renderFilters() {
+  const s = document.getElementById('sources'); s.replaceChildren();
+  for (const src of SOURCES) {
+    const n = src.key === 'all' ? ALL.length : ALL.filter(i => i.src === src.key).length;
+    s.append(el('button', {class: 'pill', 'aria-pressed': String(state.src === src.key), onclick: () => { state.src = src.key; state.cat = 'all'; update(); }}, src.label, el('span', {class: 'n'}, n)));
+  }
+  const c = document.getElementById('cats'); c.replaceChildren();
+  const pool = ALL.filter(i => state.src === 'all' || i.src === state.src);
+  c.append(el('button', {class: 'pill', 'aria-pressed': String(state.cat === 'all'), onclick: () => { state.cat = 'all'; update(); }}, 'Every category'));
+  for (const cat of [...new Set(pool.map(i => i.cat))]) c.append(el('button', {class: 'pill', 'aria-pressed': String(state.cat === cat), onclick: () => { state.cat = cat; update(); }}, cat));
+  document.getElementById('vert').setAttribute('aria-pressed', String(state.vert));
+}
+
+function renderList() {
+  const list = document.getElementById('list'); list.replaceChildren();
+  let shown = 0;
+  for (const src of SOURCES.slice(1)) {
+    const items = ALL.filter(i => i.src === src.key && matches(i));
+    if (!items.length) continue;
+    shown += items.length;
+    list.append(el('h2', {class: 'group-title'}, src.label, el('small', {}, items.length + ' format' + (items.length > 1 ? 's' : ''))),
+      el('p', {class: 'group-note'}, src.note), el('div', {class: 'grid'}, items.map(card)));
+  }
+  if (!shown) list.append(el('p', {class: 'empty'}, 'No format matches. Clear the search or pick another category.'));
+  document.getElementById('count').textContent = shown + ' of ' + ALL.length;
+}
+
+function update() { save(); renderFilters(); renderList(); }
+
+const fsel = document.getElementById('b-format');
+for (const src of SOURCES.slice(1)) {
+  const g = el('optgroup', {label: src.label});
+  ALL.filter(i => i.src === src.key).forEach(i => g.append(el('option', {value: i.id}, i.id + ' — ' + i.name)));
+  fsel.append(g);
+}
+function build() {
+  const it = ALL.find(i => i.id === fsel.value) || ALL[0];
+  const size = document.getElementById('b-aspect').value;
+  const len = document.getElementById('b-len').value || '45';
+  const audio = document.getElementById('b-audio').value.trim();
+  const topic = document.getElementById('b-topic').value.trim() || '[describe the topic or paste the script]';
+  const vertical = size === '1080x1920';
+  const slug = it.id.split(':')[1];
+  const lines = [];
+  if (it.src === 'house') {
+    lines.push(`Use the reel-to-format skill to make a ${len}s video (${size}) in my house format ${it.id}.`,
+      `Read its FORMAT.md first (/Users/TonyStark/Desktop/web/videos/formats/${slug}/) and copy its template (/Users/TonyStark/Desktop/web/${it.path}) and keep its layout, type, transitions, timing grammar and art direction. Use new images made with its prompt recipe; show me a contact sheet before rendering.`,
+      `Render with the macOS 12 route in the skill (local Chrome JPEG sequence, scan and repair frames, FFmpeg encode).`);
+  } else if (it.src === 'lemo') {
+    lines.push(`Use the lemo-opuscar skill, style ${slug} (${it.name}), to make a ${len}s film at ${size}.`,
+      vertical ? `It is a vertical Short: pass --size ${size} to every render tool and lay each page out from innerWidth × innerHeight, keeping text clear of the Shorts UI at the bottom and right edge.` : `Render with --size ${size}.`,
+      `Keep everything in STYLE.md; write your own TREATMENT.md for my topic before looking at the demo.`,
+      `Renderer: my Chrome via PLAYWRIGHT_CHROME with LEMO_ANGLE=gl (already set in ~/.zshrc).`);
+  } else {
+    lines.push(`Use the ${slug} skill (${it.name}) to make a ${len}s animation.`,
+      vertical ? `I need it vertical (${size}) for Shorts: adapt the layout from 16:9 to 9:16, with large type and nothing important in the bottom 20% or along the right edge.` : `Frame: ${size}.`,
+      `Then render it to an MP4 frame by frame with my local Chrome (not a screen recording), and add the audio with FFmpeg.`);
+  }
+  lines.push(audio ? `Audio: ${audio}. Sync the on-screen text to it.` : `No audio supplied: suggest a voiceover or music option before building.`);
+  lines.push('', 'Content:', topic, '', 'Deliver the MP4 path plus a title, description and hashtags for upload.');
+  document.getElementById('b-out').textContent = lines.join('\n');
+}
+['b-format', 'b-aspect', 'b-len', 'b-audio', 'b-topic'].forEach(id => document.getElementById(id).addEventListener('input', build));
+document.getElementById('b-copy').addEventListener('click', () => copy(document.getElementById('b-out').textContent, 'Prompt copied'));
+
+document.getElementById('q').value = state.q;
+document.getElementById('q').addEventListener('input', (e) => { state.q = e.target.value; update(); });
+document.getElementById('vert').addEventListener('click', () => { state.vert = !state.vert; update(); });
+update(); build();
+</script>

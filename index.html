@@ -1,0 +1,293 @@
+<title>Format Bin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: a darkroom contact sheet. Sticky slate bar of filters, then a grid of frames, each stamped with its reference code. Prompt builder docks below. */
+:root {
+  --bg: #e9ebee;
+  --surface: #f7f8f9;
+  --ink: #16191d;
+  --muted: #535a64;
+  --line: #c9ced5;
+  --safelight: #a92d18;
+  --safelight-soft: #f6ddd6;
+  --chip: #dde1e6;
+  --display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --body: "Source Serif 4", Georgia, serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111316; --surface: #1a1d21; --ink: #ecedef; --muted: #9aa2ad; --line: #2c3138;
+    --safelight: #ff6847; --safelight-soft: #3a1f19; --chip: #252a30; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111316; --surface: #1a1d21; --ink: #ecedef; --muted: #9aa2ad; --line: #2c3138;
+  --safelight: #ff6847; --safelight-soft: #3a1f19; --chip: #252a30; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; padding-inline: 16px; padding-block: 0 48px; }
+.wrap { max-width: 1280px; margin-inline: auto; }
+header.top { padding-block: 40px 20px; display: grid; gap: 14px; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--safelight); }
+h1 { font-family: var(--display); font-stretch: 68%; font-weight: 800; font-size: clamp(44px, 8vw, 92px); line-height: .92; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
+.lede { max-width: 62ch; color: var(--muted); margin: 0; }
+.lede code, .howto code { font-family: var(--mono); font-size: .86em; background: var(--chip); padding: 1px 6px; border-radius: 4px; color: var(--ink); }
+.howto { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 8px; }
+.howto div { border-top: 2px solid var(--ink); padding-top: 8px; font-size: 14px; color: var(--muted); }
+.howto b { display: block; font-family: var(--display); font-stretch: 80%; font-size: 17px; color: var(--ink); margin-bottom: 2px; }
+
+.slate { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); padding-block: 12px; display: grid; gap: 10px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.search { flex: 1 1 220px; min-width: 0; font: 15px var(--body); padding: 9px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+.search:focus-visible, button:focus-visible, select:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--safelight); outline-offset: 2px; }
+.pill { font-family: var(--display); font-stretch: 85%; font-weight: 600; font-size: 14px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+.pill[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.pill .n { font-family: var(--mono); font-size: 11px; opacity: .65; margin-left: 4px; }
+.cats .pill { font-size: 13px; padding: 4px 10px; }
+.count { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-left: auto; }
+
+.group-title { font-family: var(--display); font-stretch: 75%; font-weight: 700; font-size: 26px; margin: 36px 0 4px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.group-title small { font-family: var(--mono); font-size: 12px; font-weight: 400; color: var(--muted); letter-spacing: .04em; }
+.group-note { color: var(--muted); font-size: 14px; margin: 0 0 14px; max-width: 70ch; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.frame { position: relative; aspect-ratio: 16 / 9; background: #0b0c0e; overflow: hidden; max-width: 100%; }
+.frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.frame.tall img { object-fit: contain; }
+.frame .code { position: absolute; left: 8px; bottom: 8px; font-family: var(--mono); font-size: 11px; color: #fff; background: rgba(10,10,12,.72); padding: 4px 8px; border-radius: 3px; letter-spacing: .03em; }
+.body { padding: 12px 14px 14px; display: grid; gap: 8px; flex: 1; align-content: start; }
+.name { font-family: var(--display); font-stretch: 82%; font-weight: 700; font-size: 20px; line-height: 1.1; margin: 0; }
+.name span { font-family: var(--body); font-weight: 400; font-size: 14px; color: var(--muted); margin-left: 6px; }
+.desc { font-size: 14px; color: var(--muted); margin: 0; }
+.tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag { font-family: var(--mono); font-size: 11px; padding: 4px 8px; border-radius: 3px; background: var(--chip); color: var(--ink); }
+.tag.fit { background: var(--safelight-soft); color: var(--safelight); }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 4px; }
+.btn { font-family: var(--display); font-stretch: 85%; font-weight: 600; font-size: 13px; padding: 6px 10px; border-radius: 5px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; text-decoration: none; }
+.btn.primary { background: var(--safelight); border-color: var(--safelight); color: #fff; }
+.btn:hover { border-color: var(--ink); }
+.empty { padding: 40px 0; color: var(--muted); }
+
+.builder { margin-top: 56px; border-top: 3px solid var(--ink); padding-top: 18px; display: grid; gap: 14px; }
+.builder h2 { font-family: var(--display); font-stretch: 70%; font-weight: 800; font-size: 40px; margin: 0; line-height: 1; }
+.form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.form label { display: grid; gap: 4px; font-family: var(--mono); font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; min-width: 0; }
+.form .wide { grid-column: 1 / -1; }
+.form select, .form input, .form textarea { font: 15px var(--body); text-transform: none; letter-spacing: 0; padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); width: 100%; }
+.form textarea { min-height: 110px; resize: vertical; }
+.out pre { margin: 0; background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--safelight); border-radius: 6px; padding: 14px 16px; font: 13px/1.55 var(--mono); white-space: pre-wrap; word-break: break-word; overflow-x: auto; }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); font-family: var(--display); font-weight: 600; padding: 8px 16px; border-radius: 6px; font-size: 14px; z-index: 10; }
+@media (prefers-reduced-motion: no-preference) { .card { transition: transform .15s ease; } .card:hover { transform: translateY(-2px); } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">55 looks · 3 toolkits · ready to reference</div>
+    <h1>Format Bin</h1>
+    <p class="lede">Every animation style Claude can build for you, in one place. Find a look, copy its code (like <code>lemo:risograph</code>), and paste it into a request: "make a 40s Short about compound interest in <code>lemo:risograph</code>". Or fill in the prompt builder at the bottom.</p>
+    <div class="howto">
+      <div><b>House format</b>The Icarus Short. Remotion, native 9:16, captions plus flickering art-card reveals timed to your audio.</div>
+      <div><b>Lemo-Opuscar</b>43 film styles drawn in code and rendered to MP4. 16:9 by default; vertical with <code>--size 1080x1920</code>.</div>
+      <div><b>AI_Animation</b>11 HTML formats for explainers, data, diagrams and UI demos. Built for 16:9; Claude renders them to MP4 frame by frame.</div>
+    </div>
+  </header>
+
+  <div class="slate" role="search">
+    <div class="row">
+      <input id="q" class="search" type="search" placeholder="Search: ink, data, phone, poster, kids…" aria-label="Search formats">
+      <button class="pill" id="vert" aria-pressed="false" title="Show only formats that can render 9:16">Shorts-ready</button>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="row" id="sources"></div>
+    <div class="row cats" id="cats"></div>
+  </div>
+
+  <main id="list"></main>
+
+  <section class="builder" id="builder" aria-labelledby="b-title">
+    <div class="eyebrow">Prompt builder</div>
+    <h2 id="b-title">Write the request</h2>
+    <div class="form">
+      <label>Format<select id="b-format"></select></label>
+      <label>Frame<select id="b-aspect">
+        <option value="1080x1920">9:16 · YouTube Shorts / Reels</option>
+        <option value="1920x1080">16:9 · YouTube</option>
+        <option value="1080x1080">1:1 · Feed post</option>
+      </select></label>
+      <label>Length (seconds)<input id="b-len" type="number" min="5" max="600" value="45"></label>
+      <label>Audio or voice<input id="b-audio" type="text" placeholder="path to audio file, or 'generate voiceover'"></label>
+      <label class="wide">Topic or script<textarea id="b-topic" placeholder="What the video is about, or the exact lines to show. Mark punchlines with [[ ]]."></textarea></label>
+    </div>
+    <div class="out"><pre id="b-out"></pre></div>
+    <div class="row"><button class="btn primary" id="b-copy">Copy prompt</button></div>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const LEMO = [{"slug": "my-style", "num": "99", "en": "My Style", "cn": "我的风格", "category_en": "Graphic & Type", "film": "Title of the Demo Film", "line": "One sentence: what happens in the demo film.", "uses": ["Use one", "Use two", "Use three"], "dur": 0}, {"slug": "art-deco", "num": "18", "en": "Art Deco", "cn": "装饰艺术", "category_en": "Graphic & Type", "film": "Midnight at the Starlight Hotel", "line": "A grand hotel, 1930: a bellboy races lifts and revolving doors to deliver one letter before midnight.", "uses": ["Luxury & hospitality", "Galas", "Invitations"], "dur": 58.4}, {"slug": "ascii-crt", "num": "22", "en": "ASCII / CRT Terminal", "cn": "ASCII / CRT 终端", "category_en": "Graphic & Type", "film": "Tranquility.log", "line": "A moon-base AI wakes after forty years to a signal from Earth, and replies by drawing “home” in characters.", "uses": ["Developer tools", "Sci-fi", "Tech brands"], "dur": 59.8}, {"slug": "backrooms", "num": "36", "en": "Liminal Found Footage", "cn": "后室 / 新怪谈", "category_en": "Cinema & Eras", "film": "Night Shift Orientation", "line": "A new night-shift hire films their first night in an endless yellow office, following the rules on the wall.", "uses": ["Horror", "Mystery & ARG", "Game teasers"], "dur": 59.7}, {"slug": "blueprint", "num": "19", "en": "Blueprint", "cn": "蓝图 / 工程制图", "category_en": "Graphic & Type", "film": "Patent Pending: The Cloud Catcher", "line": "An inventor's blueprint draws, explodes and assembles a cloud-catching machine, and its revision cloud starts to rain.", "uses": ["Engineering", "Hardware launches", "Tech explainers"], "dur": 46.7}, {"slug": "brick-toy", "num": "37", "en": "Brick Toy", "cn": "积木玩具", "category_en": "Materials & 3D", "film": "Rocket from Spare Parts", "line": "A brick astronaut builds a rocket from spare parts and flies to a brick moon.", "uses": ["Toys & kids", "Product builds", "Space"], "dur": 54.0}, {"slug": "cel-anime-80s", "num": "27", "en": "80s Cel Anime", "cn": "80 年代赛璐璐动画", "category_en": "Cartoon & Anime", "film": "City Lights, 1987", "line": "A courier girl rides through a rain-soaked neon city to deliver a tape before the dawn launch.", "uses": ["Music videos", "Game trailers", "Nostalgia"], "dur": 59.0}, {"slug": "crayon-book", "num": "01", "en": "Crayon Picture Book", "cn": "蜡笔儿童绘本", "category_en": "Hand-drawn & Painting", "film": "The Moon Can't Sleep", "line": "The moon can't sleep, so a little girl climbs onto the roof to sing it a lullaby.", "uses": ["Picture books", "Bedtime stories", "Kids' learning"], "dur": 52.0}, {"slug": "dark-keynote", "num": "25", "en": "Dark Tech Keynote", "cn": "暗色科技发布", "category_en": "Information & Keynote", "film": "Room to Think", "line": "Launch film for Tidy, a fictional app: one buried cursor snaps hundreds of windows back into place.", "uses": ["Product launches", "SaaS", "Keynotes"], "dur": 42.0}, {"slug": "dataviz", "num": "23", "en": "Data Storytelling", "cn": "数据叙事", "category_en": "Information & Keynote", "film": "A Hundred Summers", "line": "A hundred years of summer temperatures, where the chart itself tells the story.", "uses": ["Data journalism", "Reports", "Climate & science"], "dur": 50.0}, {"slug": "engraving", "num": "53", "en": "Copperplate Engraving", "cn": "铜版画", "category_en": "Print & Printmaking", "film": "The Honeybee, Plate VII", "line": "A natural-history plate engraves itself: the burin cuts the copper, the bee builds up line by line, and a watercolour wash brings it to life.", "uses": ["Museum labels", "Science explainers", "Brand heritage"], "dur": 40.0}, {"slug": "game-show", "num": "33", "en": "Game Show Flat", "cn": "综艺节奏扁平", "category_en": "Games", "film": "Rhythm of AI, 1997 → 2026", "line": "The history of AI as a rhythm game: models take the stage on the beat, and a report card closes the show.", "uses": ["Tech timelines", "Year in review", "Variety shows"], "dur": 148.8}, {"slug": "glass-product", "num": "44", "en": "Glass Product Render", "cn": "玻璃质感产品", "category_en": "Materials & 3D", "film": "Aura — Hear the Light", "line": "Unboxing and close-ups of Aura, fictional glass earbuds, in strip-light sweeps and caustics.", "uses": ["Product launches", "Consumer tech", "Beauty"], "dur": 32.0}, {"slug": "halftone-dossier", "num": "13", "en": "Halftone Dossier", "cn": "复古半调案卷", "category_en": "Print & Printmaking", "film": "Case File: Chubby", "line": "A chubby orange cat stands trial for testing gravity and 4 a.m. parkour, and walks free.", "uses": ["Humour", "Pet content", "Social shorts"], "dur": 30.0}, {"slug": "hd-2d", "num": "31", "en": "HD-2D", "cn": "HD-2D", "category_en": "Games", "film": "The Lampbearer", "line": "The lighthouse goes dark; a girl carries the last flame through a night forest and up the storm cliffs.", "uses": ["Game trailers", "Fantasy", "Story films"], "dur": 76.5}, {"slug": "hologram-hud", "num": "52", "en": "Sci-fi Hologram HUD", "cn": "科幻全息界面", "category_en": "Information & Keynote", "film": "Volt · Spec Scan", "line": "An e-bike is scanned into a hologram; target boxes lock onto the battery, motor and brakes, and each spec rolls into place.", "uses": ["Product spec walkthroughs", "Launch & crowdfunding videos", "Trade-show screens"], "dur": 39.0}, {"slug": "impasto", "num": "04", "en": "Impasto Oil Painting", "cn": "油画厚涂", "category_en": "Hand-drawn & Painting", "film": "The Colour of Rain", "line": "In a grey, rainy square one red umbrella opens, and a waltz paints the whole plaza in colour.", "uses": ["Music videos", "Art & culture", "Emotional ads"], "dur": 39.7}, {"slug": "ink-wash", "num": "03", "en": "Chinese Ink Wash", "cn": "中国水墨", "category_en": "Hand-drawn & Painting", "film": "The Swordsman and the River", "line": "A swordsman crosses the river on the water and splits the current with a single stroke.", "uses": ["Wuxia", "Cultural brands", "Poetry"], "dur": 48.0}, {"slug": "iso-infographic", "num": "24", "en": "Isometric Infographic", "cn": "等距信息图", "category_en": "Information & Keynote", "film": "From Bean to Cup", "line": "A coffee's journey from the plantation to your hands, across one isometric world.", "uses": ["Process explainers", "Supply chains", "Annual reports"], "dur": 58.8}, {"slug": "living-screencast", "num": "46", "en": "Living Screencast", "cn": "活体实机录屏", "category_en": "Information & Keynote", "film": "Clawd Moves In", "line": "Clawd, the Claude Code pixel mascot, hops out of the terminal into the Claude app and acts out plan mode, diff comments and self-checks in a one-take screencast.", "uses": ["Product tutorials", "Feature launches", "Onboarding"], "dur": 59.4}, {"slug": "lowpoly-island", "num": "43", "en": "Low-poly Isometric Island", "cn": "低多边形等距", "category_en": "Materials & 3D", "film": "The Island That Grew", "line": "An island and its village grow tile by tile from an empty sea, each tile a note, into a starry night.", "uses": ["Game trailers", "World building", "Calm content"], "dur": 53.0}, {"slug": "microgame", "num": "32", "en": "Microgame Frenzy", "cn": "微游戏快闪（瓦里奥制造式）", "category_en": "Games", "film": "Five-Second Astronaut", "line": "A clumsy cadet survives a five-second boot camp, faster and faster, until the boss: landing home.", "uses": ["Game trailers", "Onboarding", "Social shorts"], "dur": 59.8}, {"slug": "midcentury-toon", "num": "48", "en": "Mid-century Cartoon", "cn": "50s 扁平卡通", "category_en": "Cartoon & Anime", "film": "Meet Pip", "line": "A robot vacuum set up in three steps, told like a 1950s classroom film: place the dock, connect the app, press start.", "uses": ["Product set-up guides", "Help-centre explainers", "How-to steps"], "dur": 40.0}, {"slug": "one-line", "num": "05", "en": "One-line Drawing", "cn": "一笔画", "category_en": "Hand-drawn & Painting", "film": "The Line That Never Lifted", "line": "One unbroken line draws a whole life, then the pen passes to a child.", "uses": ["Brand stories", "Life milestones", "Minimal ads"], "dur": 47.5}, {"slug": "paper-lantern", "num": "10", "en": "Paper-cut Lightbox", "cn": "纸雕灯影", "category_en": "East Asian Traditions", "film": "A Mooncake's Longing", "line": "A single mooncake tells the Mid-Autumn story of reunion and longing inside a glowing paper-cut lightbox.", "uses": ["Festivals", "Gift brands", "Cultural stories"], "dur": 121.8}, {"slug": "paper-popup", "num": "41", "en": "Paper Pop-up Book", "cn": "纸片立体书", "category_en": "Materials & 3D", "film": "Pip's Paper Adventure", "line": "A pop-up book opens on a desk; a sprite named Pip adventures through paper worlds and jumps out into ours.", "uses": ["Children's books", "Game trailers", "Story films"], "dur": 133.0}, {"slug": "papercut-red", "num": "09", "en": "Red Paper-cut", "cn": "红色窗花剪纸", "category_en": "East Asian Traditions", "film": "Nian Comes to Town", "line": "On New Year's Eve the beast Nian comes to town, and one girl's giant paper-cut lights up the village to scare it off.", "uses": ["Lunar New Year", "Festive greetings", "Folk tales"], "dur": 49.0}, {"slug": "pictogram-motion", "num": "21", "en": "Pictogram Motion", "cn": "象形运动图形", "category_en": "Graphic & Type", "film": "Aichi-Nagoya 2026 — All 43 Sports", "line": "All 43 sports of the 2026 Asian Games as beat-locked geometric pictograms.", "uses": ["Sports events", "Visual identity", "Event openers"], "dur": 163.6}, {"slug": "pixel-rpg", "num": "29", "en": "16-bit Pixel RPG", "cn": "16-bit 像素 RPG", "category_en": "Games", "film": "The Last Save Point", "line": "At the final boss door a hero saves the game, and the save screen replays the whole journey.", "uses": ["Game trailers", "Recaps", "Nostalgia"], "dur": 54.5}, {"slug": "risograph", "num": "12", "en": "Risograph Print", "cn": "Risograph 丝网印刷", "category_en": "Print & Printmaking", "film": "Sunday Ride", "line": "A Sunday-morning bike ride through the city — bakery, park, riverside — in two misregistered inks.", "uses": ["Indie brands", "Zines", "Lifestyle"], "dur": 40.0}, {"slug": "rubber-hose", "num": "26", "en": "1930s Rubber Hose Cartoon", "cn": "1930s 橡皮管卡通", "category_en": "Cartoon & Anime", "film": "Coffee Cup Chase", "line": "A coffee cup chases a runaway sugar cube around the kitchen, 1930s-cartoon style.", "uses": ["Food & drink", "Retro ads", "Kids"], "dur": 50.0}, {"slug": "scifi-toon", "num": "28", "en": "Sci-Fi Sitcom Toon", "cn": "科幻情景喜剧卡通", "category_en": "Cartoon & Anime", "film": "Coffee Run", "line": "A jaded genius opens a portal just to buy coffee and tumbles through ever-stranger universes.", "uses": ["Comedy", "Tech brands", "Social shorts"], "dur": 57.5}, {"slug": "shadow-puppet", "num": "07", "en": "Shadow Puppetry", "cn": "皮影戏", "category_en": "East Asian Traditions", "film": "Hou Yi Shoots the Suns", "line": "Ten suns scorch the earth until the archer Hou Yi draws his bow, told with leather puppets on a lit screen.", "uses": ["Myths & folklore", "Heritage", "Festivals"], "dur": 54.4}, {"slug": "silent-film", "num": "34", "en": "1920s Silent Film", "cn": "1920s 默片", "category_en": "Cinema & Eras", "film": "The Runaway Loaf", "line": "A baker's boy chases a runaway loaf downhill, then breaks it in half for a hungry girl.", "uses": ["Comedy", "Retro brands", "Silent storytelling"], "dur": 54.2}, {"slug": "silkscreen-poster", "num": "54", "en": "Silkscreen Travel Poster", "cn": "丝印旅行海报", "category_en": "Print & Printmaking", "film": "Three Trails", "line": "Three trail posters are screen-printed one ink at a time, then climbed in one long take from noon to dusk.", "uses": ["Trail & destination guides", "Tourism promos", "Event posters"], "dur": 38.4}, {"slug": "spy-titles", "num": "17", "en": "60s Spy Title Sequence", "cn": "60s 间谍片头", "category_en": "Graphic & Type", "film": "The Velvet Cipher", "line": "Opening titles for an imaginary 1964 spy film: a chase for a stolen key until the shapes lock into the title.", "uses": ["Title sequences", "Event openers", "Trailers"], "dur": 44.1}, {"slug": "stained-glass", "num": "20", "en": "Stained Glass", "cn": "彩色玻璃窗", "category_en": "Graphic & Type", "film": "The Dragon of the East Window", "line": "Sunlight crosses a cathedral window from dawn to dusk, waking each pane of a knight-and-dragon tale.", "uses": ["Legends", "Heritage", "Holiday stories"], "dur": 56.5}, {"slug": "swiss-motion", "num": "16", "en": "Swiss Motion Graphics", "cn": "瑞士动态排版", "category_en": "Graphic & Type", "film": "Five Rules for a Poster", "line": "A concert poster lays itself out by five Swiss design rules; the fifth is to break just one.", "uses": ["Brand identity", "Events", "Design education"], "dur": 44.0}, {"slug": "tilt-shift", "num": "42", "en": "Tilt-Shift Miniature", "cn": "移轴微缩", "category_en": "Materials & 3D", "film": "Toy Town Rush Hour", "line": "Morning rush hour in a town that looks like a model: traffic, trains and tiny people.", "uses": ["City promos", "Real estate", "Transport"], "dur": 38.0}, {"slug": "ukiyoe", "num": "08", "en": "Ukiyo-e", "cn": "浮世绘", "category_en": "East Asian Traditions", "film": "A Journey Toward the Mountain", "line": "A traveller walks toward a distant mountain; every shot is a woodblock print, ending in a great wave.", "uses": ["Travel", "Japanese culture", "Poetry"], "dur": 44.0}, {"slug": "urban-sketch", "num": "45", "en": "Urban Sketch · Pen & Wash", "cn": "钢笔淡彩", "category_en": "Hand-drawn & Painting", "film": "Where the Wind Went", "line": "A park that is only a pen sketch; wherever the wind carries her straw hat, colour follows.", "uses": ["City & travel", "Architecture", "Lifestyle brands"], "dur": 32.4}, {"slug": "watercolor", "num": "02", "en": "Watercolor Brush", "cn": "水彩笔刷", "category_en": "Hand-drawn & Painting", "film": "Follow the Rain", "line": "Follow the rain from Australia's red desert heart to its green coast in one unbroken painted walk.", "uses": ["Nature documentary", "Travel", "Science explainers"], "dur": 113.6}, {"slug": "whiteboard", "num": "06", "en": "Whiteboard Explainer", "cn": "白板讲解", "category_en": "Hand-drawn & Painting", "film": "Einstein in Your Pocket", "line": "How your phone knows where you are: GPS, atomic clocks, and the 38 microseconds relativity adds every day.", "uses": ["Explainers", "Online courses", "Science"], "dur": 111.0}, {"slug": "woodcut", "num": "15", "en": "Woodcut Print", "cn": "木刻版画", "category_en": "Print & Printmaking", "film": "The Bell Founder", "line": "A village spends a whole winter casting one bell; the first time it rings, the snow stops.", "uses": ["Folk tales", "Craft brands", "Book trailers"], "dur": 58.5}];
+
+const HOUSE = [{"id": "house:flicker-card", "name": "Flicker-card Reveal", "sub": "Icarus Short", "desc": "Black screen, condensed captions typed letter by letter to the narration. Each punchline hits a big rounded film-scan card strobing paintings every 2–3 frames, hand-lettered word changing font on its own beat, then the card dims and collapses to a pill. Measured from the reference reel.", "uses": ["Quotes", "Mythology", "Motivation", "Poetry"], "path": "videos/formats/flicker-card/template", "vertical": "native", "tall": true}, {"id": "house:negative-collage", "name": "Negative Collage", "sub": "lyric music video", "desc": "A tiny stick figure travels through unrelated worlds: colour-field flips, product photos flickering against their own blueprints, glowing traced figures, eye walls, giant lyric words, lightning and fireworks. Signature move: the whole frame flips to its photographic negative on the beat.", "uses": ["Music videos", "Lyric edits", "Mood reels", "Brand teasers"], "path": "videos/formats/negative-collage/template", "vertical": "size"}, {"id": "house:object-explainer", "name": "Object Explainer", "sub": "premium voiceover explainer", "desc": "Calm, premium voiceover explainer on sage-cream paper with heavy grain: lone objects with tiny red labels, desaturated inset photos pushing in, word-by-word captions mixing bold grotesk and italic serif, plus giant keyword beats. Built for money and history stories.", "uses": ["Finance explainers", "Brand stories", "History of X", "Product evolution"], "path": "videos/formats/object-explainer/template", "vertical": "size"}, {"id": "house:kinetic-lyric", "name": "Kinetic Lyric", "sub": "giant-type lyric video", "desc": "Every sung word is giant typography smashed over an eye close-up: words streak in as horizontal smears in a new typeface each time (ransom, outline, condensed, extended), phrases recede in perspective or echo across the frame, and the background dissolves between warm film and pencil sketch. Opens on a 3D music-player list.", "uses": ["Lyric videos", "Song teasers", "Spoken-word", "Poetry reels"], "path": "videos/formats/kinetic-lyric/template", "vertical": "size"}, {"id": "house:latin-translate", "name": "Latin Translate", "sub": "stoic quote carousel + reel", "desc": "A dark-mode translate card floats over navy manhwa or blue-lit marble art: a Latin maxim on the left, its English meaning on the right. The figure's head or weapon breaks in front of the card so the UI sits inside the scene. Ships as 3:4 carousel slides plus a 9:16 reel where the Latin types in, the English rises in word by word and the art pushes in.", "uses": ["Stoic quotes", "Latin maxims", "Motivation", "Carousels"], "path": "videos/formats/latin-translate/template", "vertical": "native", "tall": true}, {"id": "house:anchor-lyric", "name": "Anchor Lyric", "sub": "fixed figure, flickering world", "desc": "One dark statue stands dead-centre and never moves while the world behind it flickers every 3 frames on the beat: reaching hands, skies, fire, lightning, each in a warped black film gate. One sung word at a time sits across the figure's waist in a Didone serif. Three looks: A faithful (tinted Bodoni + glitch), B clean scope (white Playfair with glow), C burnt film (Cinzel, RGB split, heavy grain).", "uses": ["Lyric videos", "Song teasers", "Emotional edits", "Album visualisers"], "path": "videos/formats/anchor-lyric/template", "vertical": "no"}].map(h => ({cat: 'House format', ...h, src: 'house', thumb: 'thumbs/' + h.id.replace(':', '-') + '.webp'}));
+
+const AI = [
+  ['video-shot-demos', 'Cinematic Shot Pages', 'One HTML page per shot, rotating through 41 visual styles, with camera moves, synced sound effects and two reacting characters.', ['Explainers', 'Courses', 'Product launches'], 'Story'],
+  ['swiss-shot-demos', 'Swiss Chart Shots', 'Editorial Swiss layout: paper grey, charcoal ink, hairlines and one orange accent. Every shot is a chart (timeline, cycle, flow chain, heat map, 20 kinds).', ['Finance', 'Research', 'Tech explainers'], 'Data'],
+  ['stacked-data-cards', 'Stacked Data Cards', 'Argument cards pop in from the bottom and stack to the left. Line charts draw, numbers count up, gauges fill, timed to a voiceover.', ['Data arguments', 'Findings', 'Finance'], 'Data'],
+  ['ppt-animation', 'Animated Slide Deck', 'Slide-by-slide pages where every line eases in. Five themes: dark-tech, warm-paper, clean-white, cyber-red, gradient-dark.', ['Lectures', 'Tech talks', 'Course videos'], 'Slides'],
+  ['flowchart', 'Concept Flowcharts', 'Glowing nodes, flowing arrows and data particles. Seven diagram types including concept maps, timelines and model internals (RNN, LSTM).', ['How it works', 'Science', 'AI/ML'], 'Diagrams'],
+  ['dynamic-archify', 'Living Architecture', 'Architecture, sequence, data-flow and state diagrams with moving connections. Light/dark toggle; exports PNG, SVG, GIF and WebM. Accepts Mermaid.', ['System design', 'Pipelines', 'Workflows'], 'Diagrams'],
+  ['network-protocol-viz', 'Protocol Visualiser', 'Packets moving through TCP/IP, Ethernet frames, IPv4, routing, DHCP and HTTPS, step by step.', ['Networking', 'Security', 'CS lessons'], 'Diagrams'],
+  ['card-theater', 'Card Theater', 'Sidebar narration beside a 3D card carousel (coverflow, focus), with mode switches and highlighter marks.', ['Step-by-step', 'Feature tours', 'Protocols'], 'Story'],
+  ['phone-ui-demos', 'Phone Screen Film', 'A realistic phone recording: lock-screen notifications, chats, settings and app screens, with HyperOS-grade motion.', ['App demos', 'Social stories', 'Product features'], 'UI demos'],
+  ['win11-ui-demos', 'Windows 11 Replica', 'A 1:1 Windows 11 desktop: Explorer, Start menu, dialogs, even a blue screen, driven by a scripted cursor with teaching marks.', ['Software tutorials', 'IT how-tos', 'Security'], 'UI demos'],
+  ['scholar-notes', 'Scholar Notes', 'Handwritten-notebook study pages in two templates. Best as still pages or slow scroll footage.', ['Study notes', 'Summaries', 'Revision'], 'Pages'],
+].map(([slug, name, desc, uses, cat]) => ({
+  id: 'ai:' + slug, src: 'ai', name, sub: slug, cat, desc, uses,
+  thumb: 'thumbs/ai-' + slug + '.webp', vertical: 'no',
+  link: 'https://github.com/Unclecheng-li/AI_Animation/tree/master/skills/' + slug, linkLabel: 'Skill page'
+}));
+
+const LEMO_ITEMS = LEMO.filter(s => s.slug !== 'my-style').map(s => ({
+  id: 'lemo:' + s.slug, src: 'lemo', name: s.en, sub: s.cn, cat: s.category_en,
+  desc: s.line, uses: s.uses || [], film: s.film,
+  thumb: 'thumbs/lemo-' + s.slug + '.webp', vertical: 'size',
+  link: 'https://lemomo-ai.github.io/lemo-opuscar/', linkLabel: 'Demo films'
+}));
+
+const ALL = [...HOUSE, ...LEMO_ITEMS, ...AI];
+const SOURCES = [
+  {key: 'all', label: 'All'},
+  {key: 'house', label: 'House format', note: 'Built for you in this workspace. A Remotion project Claude copies for each new topic.'},
+  {key: 'lemo', label: 'Lemo-Opuscar', note: 'Film styles drawn entirely in code. Give any topic; Claude writes a treatment and renders an MP4, with optional voice and music. Library: ~/lemo-opuscar.'},
+  {key: 'ai', label: 'AI_Animation', note: 'Single-file HTML animations made for 16:9. Claude can adapt the layout and render them to MP4 frame by frame. Skills live in ~/.claude/skills.'},
+];
+
+const state = {src: 'all', cat: 'all', q: '', vert: false};
+try { Object.assign(state, JSON.parse(localStorage.getItem('format-bin') || '{}')); } catch (e) {}
+const save = () => { try { localStorage.setItem('format-bin', JSON.stringify(state)); } catch (e) {} };
+
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k.startsWith('on')) n.addEventListener(k.slice(2), v); else if (v !== null && v !== undefined) n.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) if (k !== null && k !== undefined) n.append(k.nodeType ? k : document.createTextNode(k));
+  return n;
+};
+
+const toast = (msg) => {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 1600);
+};
+const copy = async (text, msg) => {
+  try { await navigator.clipboard.writeText(text); toast(msg); }
+  catch (e) {
+    const out = document.getElementById('b-out'); out.textContent = text;
+    const r = document.createRange(); r.selectNodeContents(out); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    out.scrollIntoView({block: 'center'}); toast('Selected in the box below. Press Ctrl/Cmd+C');
+  }
+};
+
+const matches = (it) => {
+  if (state.src !== 'all' && it.src !== state.src) return false;
+  if (state.cat !== 'all' && it.cat !== state.cat) return false;
+  if (state.vert && it.vertical === 'no') return false;
+  if (state.q) {
+    const hay = [it.id, it.name, it.sub, it.cat, it.desc, it.film, ...(it.uses || [])].join(' ').toLowerCase();
+    if (!state.q.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
+  }
+  return true;
+};
+
+const vertTag = (it) => it.vertical === 'native' ? el('span', {class: 'tag fit'}, '9:16 native')
+  : it.vertical === 'size' ? el('span', {class: 'tag fit'}, '9:16 via --size') : el('span', {class: 'tag'}, '16:9 native');
+
+function card(it) {
+  return el('article', {class: 'card'},
+    el('div', {class: 'frame' + (it.tall ? ' tall' : '')},
+      el('img', {src: it.thumb, alt: it.name + ' sample frame', loading: 'lazy', width: 640, height: 360}),
+      el('span', {class: 'code'}, it.id)),
+    el('div', {class: 'body'},
+      el('h3', {class: 'name'}, it.name, it.sub ? el('span', {}, it.sub) : null),
+      el('p', {class: 'desc'}, it.desc),
+      el('div', {class: 'tags'}, vertTag(it), it.film ? el('span', {class: 'tag'}, 'Demo: ' + it.film) : null, ...(it.uses || []).slice(0, 3).map(u => el('span', {class: 'tag'}, u))),
+      el('div', {class: 'actions'},
+        el('button', {class: 'btn primary', onclick: () => copy(it.id, 'Copied ' + it.id)}, 'Copy code'),
+        el('button', {class: 'btn', onclick: () => { fsel.value = it.id; build(); document.getElementById('builder').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); }}, 'Use in prompt'),
+        it.link ? el('a', {class: 'btn', href: it.link, target: '_blank', rel: 'noopener'}, it.linkLabel) : null)));
+}
+
+function renderFilters() {
+  const s = document.getElementById('sources'); s.replaceChildren();
+  for (const src of SOURCES) {
+    const n = src.key === 'all' ? ALL.length : ALL.filter(i => i.src === src.key).length;
+    s.append(el('button', {class: 'pill', 'aria-pressed': String(state.src === src.key), onclick: () => { state.src = src.key; state.cat = 'all'; update(); }}, src.label, el('span', {class: 'n'}, n)));
+  }
+  const c = document.getElementById('cats'); c.replaceChildren();
+  const pool = ALL.filter(i => state.src === 'all' || i.src === state.src);
+  c.append(el('button', {class: 'pill', 'aria-pressed': String(state.cat === 'all'), onclick: () => { state.cat = 'all'; update(); }}, 'Every category'));
+  for (const cat of [...new Set(pool.map(i => i.cat))]) c.append(el('button', {class: 'pill', 'aria-pressed': String(state.cat === cat), onclick: () => { state.cat = cat; update(); }}, cat));
+  document.getElementById('vert').setAttribute('aria-pressed', String(state.vert));
+}
+
+function renderList() {
+  const list = document.getElementById('list'); list.replaceChildren();
+  let shown = 0;
+  for (const src of SOURCES.slice(1)) {
+    const items = ALL.filter(i => i.src === src.key && matches(i));
+    if (!items.length) continue;
+    shown += items.length;
+    list.append(el('h2', {class: 'group-title'}, src.label, el('small', {}, items.length + ' format' + (items.length > 1 ? 's' : ''))),
+      el('p', {class: 'group-note'}, src.note), el('div', {class: 'grid'}, items.map(card)));
+  }
+  if (!shown) list.append(el('p', {class: 'empty'}, 'No format matches. Clear the search or pick another category.'));
+  document.getElementById('count').textContent = shown + ' of ' + ALL.length;
+}
+
+function update() { save(); renderFilters(); renderList(); }
+
+const fsel = document.getElementById('b-format');
+for (const src of SOURCES.slice(1)) {
+  const g = el('optgroup', {label: src.label});
+  ALL.filter(i => i.src === src.key).forEach(i => g.append(el('option', {value: i.id}, i.id + ' — ' + i.name)));
+  fsel.append(g);
+}
+function build() {
+  const it = ALL.find(i => i.id === fsel.value) || ALL[0];
+  const size = document.getElementById('b-aspect').value;
+  const len = document.getElementById('b-len').value || '45';
+  const audio = document.getElementById('b-audio').value.trim();
+  const topic = document.getElementById('b-topic').value.trim() || '[describe the topic or paste the script]';
+  const vertical = size === '1080x1920';
+  const slug = it.id.split(':')[1];
+  const lines = [];
+  if (it.src === 'house') {
+    lines.push(`Use the reel-to-format skill to make a ${len}s video (${size}) in my house format ${it.id}.`,
+      `Read its FORMAT.md first (/Users/TonyStark/Desktop/web/videos/formats/${slug}/) and copy its template (/Users/TonyStark/Desktop/web/${it.path}) and keep its layout, type, transitions, timing grammar and art direction. Use new images made with its prompt recipe; show me a contact sheet before rendering.`,
+      `Render with the macOS 12 route in the skill (local Chrome JPEG sequence, scan and repair frames, FFmpeg encode).`);
+  } else if (it.src === 'lemo') {
+    lines.push(`Use the lemo-opuscar skill, style ${slug} (${it.name}), to make a ${len}s film at ${size}.`,
+      vertical ? `It is a vertical Short: pass --size ${size} to every render tool and lay each page out from innerWidth × innerHeight, keeping text clear of the Shorts UI at the bottom and right edge.` : `Render with --size ${size}.`,
+      `Keep everything in STYLE.md; write your own TREATMENT.md for my topic before looking at the demo.`,
+      `Renderer: my Chrome via PLAYWRIGHT_CHROME with LEMO_ANGLE=gl (already set in ~/.zshrc).`);
+  } else {
+    lines.push(`Use the ${slug} skill (${it.name}) to make a ${len}s animation.`,
+      vertical ? `I need it vertical (${size}) for Shorts: adapt the layout from 16:9 to 9:16, with large type and nothing important in the bottom 20% or along the right edge.` : `Frame: ${size}.`,
+      `Then render it to an MP4 frame by frame with my local Chrome (not a screen recording), and add the audio with FFmpeg.`);
+  }
+  lines.push(audio ? `Audio: ${audio}. Sync the on-screen text to it.` : `No audio supplied: suggest a voiceover or music option before building.`);
+  lines.push('', 'Content:', topic, '', 'Deliver the MP4 path plus a title, description and hashtags for upload.');
+  document.getElementById('b-out').textContent = lines.join('\n');
+}
+['b-format', 'b-aspect', 'b-len', 'b-audio', 'b-topic'].forEach(id => document.getElementById(id).addEventListener('input', build));
+document.getElementById('b-copy').addEventListener('click', () => copy(document.getElementById('b-out').textContent, 'Prompt copied'));
+
+document.getElementById('q').value = state.q;
+document.getElementById('q').addEventListener('input', (e) => { state.q = e.target.value; update(); });
+document.getElementById('vert').addEventListener('click', () => { state.vert = !state.vert; update(); });
+update(); build();
+</script>
