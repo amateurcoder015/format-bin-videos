@@ -55,8 +55,10 @@ h1 { font-family: var(--display); font-stretch: 68%; font-weight: 800; font-size
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
 .frame { position: relative; aspect-ratio: 16 / 9; background: #0b0c0e; overflow: hidden; max-width: 100%; }
-.frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.frame.tall img { object-fit: contain; }
+.frame img, .frame video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.frame.tall img, .frame.tall video { object-fit: contain; }
+.frame.sprite { background-image: url(thumbs/pm-sprite.webp); background-size: 1600% 1500%; }
+.frame.sprite video { background: transparent; }
 .frame .code { position: absolute; left: 8px; bottom: 8px; font-family: var(--mono); font-size: 11px; color: #fff; background: rgba(10,10,12,.72); padding: 4px 8px; border-radius: 3px; letter-spacing: .03em; }
 .body { padding: 12px 14px 14px; display: grid; gap: 8px; flex: 1; align-content: start; }
 .name { font-family: var(--display); font-stretch: 82%; font-weight: 700; font-size: 20px; line-height: 1.1; margin: 0; }
@@ -70,6 +72,12 @@ h1 { font-family: var(--display); font-stretch: 68%; font-weight: 800; font-size
 .btn.primary { background: var(--safelight); border-color: var(--safelight); color: #fff; }
 .btn:hover { border-color: var(--ink); }
 .empty { padding: 40px 0; color: var(--muted); }
+.by { font-family: var(--mono); font-size: 12px; color: var(--muted); margin: 0; }
+.by a { color: inherit; }
+details.prompt { font-size: 13px; }
+details.prompt summary { cursor: pointer; font-family: var(--mono); font-size: 12px; color: var(--safelight); }
+details.prompt pre { margin: 6px 0 0; max-height: 260px; overflow: auto; background: var(--bg); border: 1px solid var(--line); border-radius: 5px; padding: 10px; font: 12px/1.5 var(--mono); white-space: pre-wrap; word-break: break-word; }
+.desc.clip { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
 .builder { margin-top: 56px; border-top: 3px solid var(--ink); padding-top: 18px; display: grid; gap: 14px; }
 .builder h2 { font-family: var(--display); font-stretch: 70%; font-weight: 800; font-size: 40px; margin: 0; line-height: 1; }
@@ -85,13 +93,14 @@ h1 { font-family: var(--display); font-stretch: 68%; font-weight: 800; font-size
 
 <div class="wrap">
   <header class="top">
-    <div class="eyebrow">55 looks · 3 toolkits · ready to reference</div>
+    <div class="eyebrow">300 looks · 4 toolkits · ready to reference</div>
     <h1>Format Bin</h1>
     <p class="lede">Every animation style Claude can build for you, in one place. Find a look, copy its code (like <code>lemo:risograph</code>), and paste it into a request: "make a 40s Short about compound interest in <code>lemo:risograph</code>". Or fill in the prompt builder at the bottom.</p>
     <div class="howto">
       <div><b>House format</b>The Icarus Short. Remotion, native 9:16, captions plus flickering art-card reveals timed to your audio.</div>
       <div><b>Lemo-Opuscar</b>43 film styles drawn in code and rendered to MP4. 16:9 by default; vertical with <code>--size 1080x1920</code>.</div>
       <div><b>AI_Animation</b>11 HTML formats for explainers, data, diagrams and UI demos. Built for 16:9; Claude renders them to MP4 frame by frame.</div>
+      <div><b>Prompt Motion</b>240 videos from prompt-motion.com, each with the exact prompt or skill that made it. Default starting point for new videos; credit goes to each creator.</div>
     </div>
   </header>
 
@@ -157,12 +166,22 @@ const LEMO_ITEMS = LEMO.filter(s => s.slug !== 'my-style').map(s => ({
   link: 'https://lemomo-ai.github.io/lemo-opuscar/', linkLabel: 'Demo films'
 }));
 
-const ALL = [...HOUSE, ...LEMO_ITEMS, ...AI];
+const PM = /*PM_DATA*/;
+const PM_ITEMS = PM.map(p => ({
+  id: 'pm:' + p.slug, src: 'pm', name: p.name, sub: p.kind === 'skill' ? 'skill' : '', cat: p.tags[0] || 'Other',
+  desc: p.kind === 'skill' ? p.prompt : p.prompt.replace(/\s+/g, ' ').slice(0, 220), uses: p.tags, prompt: p.prompt, install: p.install, repo: p.repo,
+  creator: p.creator, handle: p.handle, kind: p.kind, model: p.model, effort: p.effort,
+  cell: p.cell, preview: 'previews/pm-' + p.slug + '.mp4', contain: p.h >= p.w, vertical: p.h > p.w ? 'native' : (p.h === p.w ? 'square' : 'no'),
+  link: p.url, linkLabel: 'Watch'
+}));
+
+const ALL = [...HOUSE, ...LEMO_ITEMS, ...AI, ...PM_ITEMS];
 const SOURCES = [
   {key: 'all', label: 'All'},
   {key: 'house', label: 'House format', note: 'Built for you in this workspace. A Remotion project Claude copies for each new topic.'},
   {key: 'lemo', label: 'Lemo-Opuscar', note: 'Film styles drawn entirely in code. Give any topic; Claude writes a treatment and renders an MP4, with optional voice and music. Library: ~/lemo-opuscar.'},
   {key: 'ai', label: 'AI_Animation', note: 'Single-file HTML animations made for 16:9. Claude can adapt the layout and render them to MP4 frame by frame. Skills live in ~/.claude/skills.'},
+  {key: 'pm', label: 'Prompt Motion', note: 'Motion videos made with Claude, collected on prompt-motion.com, each with the prompt or skill behind it. Open the prompt, copy it, or send it to the builder. Videos and prompts belong to their creators; Watch opens the original entry.'},
 ];
 
 const state = {src: 'all', cat: 'all', q: '', vert: false};
@@ -197,26 +216,30 @@ const matches = (it) => {
   if (state.cat !== 'all' && it.cat !== state.cat) return false;
   if (state.vert && it.vertical === 'no') return false;
   if (state.q) {
-    const hay = [it.id, it.name, it.sub, it.cat, it.desc, it.film, ...(it.uses || [])].join(' ').toLowerCase();
+    const hay = [it.id, it.name, it.sub, it.cat, it.desc, it.film, it.creator, it.prompt, ...(it.uses || [])].join(' ').toLowerCase();
     if (!state.q.toLowerCase().split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
   }
   return true;
 };
 
 const vertTag = (it) => it.vertical === 'native' ? el('span', {class: 'tag fit'}, '9:16 native')
-  : it.vertical === 'size' ? el('span', {class: 'tag fit'}, '9:16 via --size') : el('span', {class: 'tag'}, '16:9 native');
+  : it.vertical === 'size' ? el('span', {class: 'tag fit'}, '9:16 via --size') : it.vertical === 'square' ? el('span', {class: 'tag'}, '1:1') : el('span', {class: 'tag'}, '16:9 native');
 
 function card(it) {
   return el('article', {class: 'card'},
-    el('div', {class: 'frame' + (it.tall ? ' tall' : '')},
-      el('img', {src: it.thumb, alt: it.name + ' sample frame', loading: 'lazy', width: 640, height: 360}),
+    el('div', {class: 'frame' + (it.tall ? ' tall' : '') + (it.contain ? ' tall' : '') + (it.cell !== undefined ? ' sprite' : ''), style: it.cell !== undefined ? `background-position:${(it.cell % 16) / 15 * 100}% ${Math.floor(it.cell / 16) / 14 * 100}%` : ''},
+      it.preview ? el('video', {class: 'pv', 'data-src': it.preview, muted: '', loop: '', playsinline: '', preload: 'none', 'aria-label': it.name + ' preview', width: 640, height: 360})
+        : el('img', {src: it.thumb, alt: it.name + ' sample frame', loading: 'lazy', width: 640, height: 360}),
       el('span', {class: 'code'}, it.id)),
     el('div', {class: 'body'},
       el('h3', {class: 'name'}, it.name, it.sub ? el('span', {}, it.sub) : null),
-      el('p', {class: 'desc'}, it.desc),
+      it.src === 'pm' ? el('p', {class: 'by'}, 'by ', el('a', {href: it.handle, target: '_blank', rel: 'noopener'}, it.creator || it.handle.split('/').pop()), it.model ? ' · ' + it.model + (it.effort ? ' ' + it.effort : '') : '') : null,
+      el('p', {class: 'desc' + (it.src === 'pm' ? ' clip' : '')}, it.desc),
+      it.src === 'pm' ? el('details', {class: 'prompt'}, el('summary', {}, it.kind === 'skill' ? 'Install command' : 'Full prompt (' + it.prompt.length.toLocaleString() + ' chars)'), el('pre', {}, it.kind === 'skill' ? it.install : it.prompt)) : null,
       el('div', {class: 'tags'}, vertTag(it), it.film ? el('span', {class: 'tag'}, 'Demo: ' + it.film) : null, ...(it.uses || []).slice(0, 3).map(u => el('span', {class: 'tag'}, u))),
       el('div', {class: 'actions'},
-        el('button', {class: 'btn primary', onclick: () => copy(it.id, 'Copied ' + it.id)}, 'Copy code'),
+        it.src === 'pm' ? el('button', {class: 'btn primary', onclick: () => copy(it.kind === 'skill' ? it.install : it.prompt, it.kind === 'skill' ? 'Install command copied' : 'Prompt copied')}, it.kind === 'skill' ? 'Copy install' : 'Copy prompt')
+          : el('button', {class: 'btn primary', onclick: () => copy(it.id, 'Copied ' + it.id)}, 'Copy code'),
         el('button', {class: 'btn', onclick: () => { fsel.value = it.id; build(); document.getElementById('builder').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'}); }}, 'Use in prompt'),
         it.link ? el('a', {class: 'btn', href: it.link, target: '_blank', rel: 'noopener'}, it.linkLabel) : null)));
 }
@@ -246,6 +269,23 @@ function renderList() {
   }
   if (!shown) list.append(el('p', {class: 'empty'}, 'No format matches. Clear the search or pick another category.'));
   document.getElementById('count').textContent = shown + ' of ' + ALL.length;
+  watchPreviews();
+}
+
+// Motion previews: play a clip only while its card is on screen (or on hover when reduced motion is set).
+const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const start = (v) => { if (!v.src) v.src = v.dataset.src; v.muted = true; const p = v.play(); if (p) p.catch(() => {}); };
+const stop = (v) => { if (!v.paused) v.pause(); };
+const io = 'IntersectionObserver' in window ? new IntersectionObserver((es) => es.forEach(e => (e.isIntersecting ? start : stop)(e.target)), {threshold: 0.5}) : null;
+function watchPreviews() {
+  if (io) io.disconnect();
+  document.querySelectorAll('video.pv').forEach(v => {
+    if (!calm && io) io.observe(v);
+    const card = v.closest('.card');
+    card.addEventListener('mouseenter', () => start(v));
+    card.addEventListener('focusin', () => start(v));
+    if (calm) { card.addEventListener('mouseleave', () => stop(v)); card.addEventListener('focusout', () => stop(v)); }
+  });
 }
 
 function update() { save(); renderFilters(); renderList(); }
@@ -274,6 +314,11 @@ function build() {
       vertical ? `It is a vertical Short: pass --size ${size} to every render tool and lay each page out from innerWidth × innerHeight, keeping text clear of the Shorts UI at the bottom and right edge.` : `Render with --size ${size}.`,
       `Keep everything in STYLE.md; write your own TREATMENT.md for my topic before looking at the demo.`,
       `Renderer: my Chrome via PLAYWRIGHT_CHROME with LEMO_ANGLE=gl (already set in ~/.zshrc).`);
+  } else if (it.src === 'pm') {
+    lines.push(`Make a ${len}s motion video at ${size}, starting from Prompt Motion entry ${it.id} ("${it.name}" by ${it.creator}, ${it.link}).`,
+      it.kind === 'skill' ? `It uses a skill. Install it first: ${it.install}` : `Its original prompt is below. Keep its art direction, motion grammar and pacing, and swap in my topic and frame size.`,
+      `Build it with HyperFrames (or Remotion if the prompt needs it) and render an MP4 with my local Chrome.`);
+    if (it.kind !== 'skill') lines.push('', '--- Original prompt ---', it.prompt, '--- End of original prompt ---');
   } else {
     lines.push(`Use the ${slug} skill (${it.name}) to make a ${len}s animation.`,
       vertical ? `I need it vertical (${size}) for Shorts: adapt the layout from 16:9 to 9:16, with large type and nothing important in the bottom 20% or along the right edge.` : `Frame: ${size}.`,

@@ -21,6 +21,8 @@ for h in house:
 
 lemo = json.load(open(os.path.join(HERE, 'lemo.json')))
 page = open(os.path.join(HERE, 'template.html')).read()
+pm = [{k: p.get(k) for k in ('slug', 'name', 'url', 'creator', 'handle', 'tags', 'kind', 'prompt', 'install', 'repo', 'w', 'h', 'model', 'effort', 'cell')} for p in json.load(open(os.path.join(HERE, 'prompt_motion.json')))]
+page = page.replace('/*PM_DATA*/', json.dumps(pm, ensure_ascii=False).replace('</', '<\\/'))
 page = page.replace('/*LEMO_DATA*/', json.dumps(lemo, ensure_ascii=False)).replace('/*HOUSE_DATA*/', json.dumps(house, ensure_ascii=False))
 open(os.path.join(HERE, 'index.html'), 'w').write(page)
-print(f'index.html: {len(house)} house, {len(lemo) - 1} lemo formats; thumbs: {len(os.listdir(os.path.join(HERE, "thumbs")))}')
+print(f'index.html: {len(house)} house, {len(lemo) - 1} lemo, {len(pm)} prompt-motion; thumbs: {len(os.listdir(os.path.join(HERE, "thumbs")))}')

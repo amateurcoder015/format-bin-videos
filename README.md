@@ -1,6 +1,6 @@
 # Format Bin
 
-A private gallery of 55 video formats you can reuse for your own videos: lyric videos, finance explainers, reels, carousels, painted and hand-drawn styles. Every format has a reference code, so you can say "make mine in `house:kinetic-lyric`" and get that look.
+A gallery of 300 video formats you can reuse for your own videos: lyric videos, finance explainers, reels, carousels, painted and hand-drawn styles. Every format has a reference code, so you can say "make mine in `house:kinetic-lyric`" and get that look.
 
 <p align="center"><img src="docs/gifs/all-formats.gif" alt="A grid cycling through all the formats in the gallery" width="820"></p>
 
@@ -26,13 +26,19 @@ These clips come from videos made with the formats in the gallery.
   </tr>
 </table>
 
+### Prompt Motion (240 entries)
+
+The `pm:<slug>` section holds 240 motion videos made with Claude, collected from [prompt-motion.com](https://prompt-motion.com). Each card plays a short looping preview and shows the exact prompt (or skill) behind the video, with buttons to copy it or drop it into the prompt builder. Videos and prompts belong to their creators: every card credits the creator and links back to the original entry.
+
+<p align="center"><img src="docs/prompt-motion.png" alt="Prompt Motion cards with looping previews and prompts" width="820"></p>
+
 The other formats are Lemo-Opuscar film styles (`lemo:<slug>`, such as oil painting, watercolour, ink wash and ukiyo-e) and animation skills (`ai:<skill>`, such as flowcharts, phone UI demos and data cards).
 
 ## Get access
 
 Live site: https://format-bin-videos.vercel.app
 
-**Want to see all 55 formats?** The gallery is password-protected. Message me on [WhatsApp](https://wa.me/919619141433) or [Instagram](https://instagram.com/_.bhavya._015) for the password.
+**Want to see all 300 formats?** The gallery is password-protected. Message me on [WhatsApp](https://wa.me/919619141433) or [Instagram](https://instagram.com/_.bhavya._015) for the password.
 
 ![Format Bin login page](docs/login.png)
 
@@ -49,4 +55,4 @@ python3 -c 'import hashlib,sys; h=lambda s: hashlib.sha256(s.encode()).hexdigest
 
 ## Editing the gallery
 
-`template.html` is the source; `build_gallery.py` inlines `lemo.json` into `index.html`. Thumbnails live in `thumbs/`, source images in `raw/`.
+`template.html` is the source; `build_gallery.py` inlines `lemo.json`, the house registry and `prompt_motion.json` into `index.html`. Thumbnails live in `thumbs/` (the 240 Prompt Motion posters are packed into `thumbs/pm-sprite.webp`), preview clips in `previews/`, source images in `raw/`.
